@@ -296,6 +296,8 @@ public class DataMediaPairServiceImpl implements DataMediaPairService {
             dataMediaPair.setPipelineId(dataMediaPairDo.getPipelineId());
             dataMediaPair.setPullWeight(dataMediaPairDo.getPullWeight());
             dataMediaPair.setPushWeight(dataMediaPairDo.getPushWeight());
+            dataMediaPair.setIsShardingJdbc(dataMediaPairDo.getIsShardingJdbc());
+            dataMediaPair.setShardingKey(dataMediaPairDo.getShardingKey());
             if (StringUtils.isNotBlank(dataMediaPairDo.getFilter())) {
                 dataMediaPair.setFilterData(JsonUtils.unmarshalFromString(dataMediaPairDo.getFilter(),
                                                                           ExtensionData.class));
@@ -373,6 +375,8 @@ public class DataMediaPairServiceImpl implements DataMediaPairService {
             dataMediaPairDo.setPipelineId(dataMediaPair.getPipelineId());
             dataMediaPairDo.setSourceDataMediaId(dataMediaPair.getSource().getId());
             dataMediaPairDo.setTargetDataMediaId(dataMediaPair.getTarget().getId());
+            dataMediaPairDo.setIsShardingJdbc(dataMediaPair.getIsShardingJdbc());
+            dataMediaPairDo.setShardingKey(dataMediaPair.getShardingKey());
             dataMediaPairDo.setFilter(JsonUtils.marshalToString(dataMediaPair.getFilterData()));
             dataMediaPairDo.setResolver(JsonUtils.marshalToString(dataMediaPair.getResolverData()));
             dataMediaPairDo.setPullWeight(dataMediaPair.getPullWeight());

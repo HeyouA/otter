@@ -34,6 +34,9 @@ $control.setTemplate("home:navigation.vm")
   <th>目标数据表：</th><td><span class="red">Schema Name:</span>$!dataMediaPair.target.namespace<span class="red">Table Name:</span><a href="dataMediaInfo.htm?dataMediaId=$dataMediaPair.target.id">$!dataMediaPair.target.name</a><span class="red">Source Name:</span><a href="dataSourceInfo.htm?dataMediaSourceId=$dataMediaPair.target.source.id">$!dataMediaPair.target.source.name</a></td>
   </tr>
   <tr>
+      <th>是否分库分表：</th><td>#if($!dataMediaPair.isShardingJdbc == 0) 否 #else $!dataMediaPair.shardingKey #end</td>
+  </tr>
+  <tr>
   <th>权重：</th><td>$!dataMediaPair.pushWeight</td>
   </tr>
   <tr>

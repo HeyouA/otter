@@ -149,9 +149,37 @@ public class RowDataTransformer extends AbstractOtterTransformer<EventData, Even
         String schemaName = buildName(data.getSchemaName(),
             sourceDataMedia.getNamespaceMode(),
             targetDataMedia.getNamespaceMode());
-        String tableName = buildName(data.getTableName(), sourceDataMedia.getNameMode(), targetDataMedia.getNameMode());
+        String tableName = null;
+        if(pair.isShardingJdbc()){
+            tableName = buildNameSharding(data, pair);
+        }else{
+            tableName = buildName(data.getTableName(), sourceDataMedia.getNameMode(), targetDataMedia.getNameMode());
+        }
         result.setSchemaName(schemaName);
         result.setTableName(tableName);
+    }
+
+    private String buildNameSharding(EventData data,  DataMediaPair pair) {
+        ModeValue targetModeValue = pair.getTarget().getNameMode();
+        //获取源表的所有字段，看源字段是否存在
+        List<EventColumn> allColumns = new ArrayList<EventColumn>();
+        allColumns.addAll(data.getKeys());
+        allColumns.addAll(data.getColumns());
+        String shardValue = null;
+        //获取分库分表路由字段的值
+        for (EventColumn eventColumn : allColumns) {
+            if (eventColumn.getColumnName().equalsIgnoreCase(pair.getShardingKey())) {
+                shardValue = eventColumn.getColumnValue();
+                break;
+            }
+        }
+        //如果分库分表字段为null
+        if (shardValue == null) {
+            throw new RuntimeException("分表字段:{" + pair.getShardingKey() + "}为null，eventData:{" + data + "}");
+        }
+        List<String> tmp = targetModeValue.getMultiValue();
+        int index = Integer.valueOf(shardValue) % tmp.size();
+        return tmp.get(index);
     }
 
     private String buildName(String name, ModeValue sourceModeValue, ModeValue targetModeValue) {

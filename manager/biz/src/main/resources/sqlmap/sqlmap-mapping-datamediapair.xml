@@ -10,6 +10,8 @@
 		<result property="id" column="ID" />
 		<result property="sourceDataMediaId" column="SOURCE_DATA_MEDIA_ID" />
 		<result property="targetDataMediaId" column="TARGET_DATA_MEDIA_ID" />
+		<result property="isShardingJdbc" column="IS_SHARDING_JDBC" />
+		<result property="shardingKey" column="SHARDING_KEY" />
 		<result property="pullWeight" column="PULLWEIGHT" />
 		<result property="pushWeight" column="PUSHWEIGHT" />
 		<result property="filter" column="FILTER" />
@@ -21,7 +23,7 @@
 	</resultMap>
 
 	<!-- all dataMediaPair columns -->
-	<sql id="allDataMediaPairColumns">ID,SOURCE_DATA_MEDIA_ID,TARGET_DATA_MEDIA_ID,PULLWEIGHT,PUSHWEIGHT,FILTER,RESOLVER,PIPELINE_ID,COLUMN_PAIR_MODE,GMT_CREATE,GMT_MODIFIED</sql>
+	<sql id="allDataMediaPairColumns">ID,SOURCE_DATA_MEDIA_ID,TARGET_DATA_MEDIA_ID,IS_SHARDING_JDBC,SHARDING_KEY,PULLWEIGHT,PUSHWEIGHT,FILTER,RESOLVER,PIPELINE_ID,COLUMN_PAIR_MODE,GMT_CREATE,GMT_MODIFIED</sql>
 
 	<select id="findDataMediaPairById" resultMap="dataMediaPairResult" parameterClass="long">
 		select
@@ -90,6 +92,8 @@
 		set
 		SOURCE_DATA_MEDIA_ID = #sourceDataMediaId#,
 		TARGET_DATA_MEDIA_ID = #targetDataMediaId#,
+		IS_SHARDING_JDBC = #isShardingJdbc#,
+		SHARDING_KEY = #shardingKey#,
 		PULLWEIGHT = #pullWeight#,
 		PUSHWEIGHT = #pushWeight#,
 		FILTER = #filter#,
@@ -113,8 +117,8 @@
 	
 	<insert id="insertDataMediaPair" parameterClass="dataMediaPair">
 		insert into DATA_MEDIA_PAIR
-		(SOURCE_DATA_MEDIA_ID,TARGET_DATA_MEDIA_ID,PULLWEIGHT,PUSHWEIGHT,FILTER,RESOLVER,PIPELINE_ID,COLUMN_PAIR_MODE,GMT_CREATE,GMT_MODIFIED)
-		SELECT #sourceDataMediaId#,#targetDataMediaId#,#pullWeight#,#pushWeight#,#filter#,#resolver#,#pipelineId#,#columnPairMode#,now(),now() 
+		(SOURCE_DATA_MEDIA_ID,TARGET_DATA_MEDIA_ID,IS_SHARDING_JDBC,SHARDING_KEY,PULLWEIGHT,PUSHWEIGHT,FILTER,RESOLVER,PIPELINE_ID,COLUMN_PAIR_MODE,GMT_CREATE,GMT_MODIFIED)
+		SELECT #sourceDataMediaId#,#targetDataMediaId#,#isShardingJdbc#,#shardingKey#,#pullWeight#,#pushWeight#,#filter#,#resolver#,#pipelineId#,#columnPairMode#,now(),now()
 		from dual 
 		WHERE not exists (select * from DATA_MEDIA_PAIR 
 		where DATA_MEDIA_PAIR.SOURCE_DATA_MEDIA_ID = #sourceDataMediaId# 

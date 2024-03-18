@@ -37,6 +37,11 @@ public class DataMediaPair implements Serializable {
     private Long              pipelineId;                                     // 同步任务id
     private DataMedia         source;
     private DataMedia         target;
+
+    private int              isShardingJdbc;
+
+    private String shardingKey;
+
     private Long              pullWeight;                                     // 介质A中获取数据的权重
     private Long              pushWeight;                                     // 介质B中写入数据的权重
     private ExtensionData     resolverData;                                   // 关联数据解析类
@@ -77,6 +82,26 @@ public class DataMediaPair implements Serializable {
 
     public void setTarget(DataMedia target) {
         this.target = target;
+    }
+
+    public int getIsShardingJdbc() {
+        return isShardingJdbc;
+    }
+
+    public boolean isShardingJdbc() {
+        return isShardingJdbc == 1;
+    }
+
+    public void setIsShardingJdbc(int isShardingJdbc) {
+        this.isShardingJdbc = isShardingJdbc;
+    }
+
+    public String getShardingKey() {
+        return shardingKey;
+    }
+
+    public void setShardingKey(String shardingKey) {
+        this.shardingKey = shardingKey;
     }
 
     public Long getPullWeight() {

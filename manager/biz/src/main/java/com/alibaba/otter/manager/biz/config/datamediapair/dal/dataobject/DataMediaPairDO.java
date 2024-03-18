@@ -30,6 +30,10 @@ public class DataMediaPairDO implements Serializable {
     private Long              id;
     private Long              sourceDataMediaId;
     private Long              targetDataMediaId;
+
+    private int              isShardingJdbc;
+
+    private String            shardingKey;
     private Long              pullWeight;                              // 介质A中获取数据的权重
     private Long              pushWeight;                              // 介质B中写入数据的权重
     private String            resolver;                                // 关联数据解析类
@@ -61,6 +65,22 @@ public class DataMediaPairDO implements Serializable {
 
     public void setTargetDataMediaId(Long targetDataMediaId) {
         this.targetDataMediaId = targetDataMediaId;
+    }
+
+    public int getIsShardingJdbc() {
+        return isShardingJdbc;
+    }
+
+    public void setIsShardingJdbc(int isShardingJdbc) {
+        this.isShardingJdbc = isShardingJdbc;
+    }
+
+    public String getShardingKey() {
+        return shardingKey;
+    }
+
+    public void setShardingKey(String shardingKey) {
+        this.shardingKey = shardingKey;
     }
 
     public Long getPipelineId() {

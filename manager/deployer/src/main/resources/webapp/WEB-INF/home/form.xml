@@ -339,6 +339,8 @@
 			<field name="batchPairContent" displayName="批量导入大本文">
 			</field>
 			<field name="id" displayName="dataMedia的id" />
+			<field name="isShardingJdbc" displayName="是否分库分表" />
+			<field name="shardingKey" displayName="分库分表列名" />
 			<field name="pullWeight" displayName="提取权重" />
 
 			<field name="pushWeight" displayName="载入权重">

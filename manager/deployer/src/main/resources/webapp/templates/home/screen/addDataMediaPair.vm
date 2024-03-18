@@ -16,6 +16,17 @@ function changeKeyword(id, name, local) {
     	}
 	}
 }
+function shardingButton(isShardingJdbc){
+	// 获取分库分表列名的输入框
+	if (isShardingJdbc === 1) {
+		// 如果选择了“是”，则显示文本框
+		$(".tr-shardingKey").show();
+	} else {
+		// 如果选择了“否”，则隐藏文本框并清空内容
+		$(".tr-shardingKey").hide();
+		$("#shardingKey").val('');
+	}
+}
 </script>
 #macro (addDataMediaPairMessage $field)
     #if (!$field.valid) $field.message #end
@@ -58,6 +69,21 @@ function changeKeyword(id, name, local) {
 			<span class="red">#addDataMediaPairMessage ($dataMediaPairGroup.targetDataMediaId)</span>
 		</td>
       </tr>
+		<tr>
+			<th>是否分库分表:</th>
+			<td>
+				<input type="radio" onclick="shardingButton(0)" name="$dataMediaPairGroup.isShardingJdbc.key" value="0" id="RadioGroup3_0"  checked="checked"  class="tr-isShardingJdbc"/>否
+				<input type="radio" onclick="shardingButton(1)" name="$dataMediaPairGroup.isShardingJdbc.key" value="1" id="RadioGroup3_1" class="tr-isShardingJdbc"/>是
+				<br />
+			</td>
+		</tr>
+		<tr class="tr-shardingKey" style="display:none;">
+			<th>分库分表列名:</th>
+			<td>
+				<input type="text" name="$dataMediaPairGroup.shardingKey.key" value="" id="shardingKey" />
+				<br />
+			</td>
+		</tr>
       <tr>
         <th>权重:</th>
         <td>
