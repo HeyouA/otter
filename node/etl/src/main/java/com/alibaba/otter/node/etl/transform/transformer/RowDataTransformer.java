@@ -16,10 +16,11 @@
 
 package com.alibaba.otter.node.etl.transform.transformer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
@@ -105,29 +106,78 @@ public class RowDataTransformer extends AbstractOtterTransformer<EventData, Even
         boolean useTableTransform = context.getPipeline().getParameters().getUseTableTransform();
         boolean enableCompatibleMissColumn = context.getPipeline().getParameters().getEnableCompatibleMissColumn();
         TableInfoHolder tableHolder = null;
+        Table table = null;
         if (useTableTransform || enableCompatibleMissColumn) {// 控制一下是否需要反查table
-                                                              // meta信息，如果同构数据库，完全没必要反查
+            // meta信息，如果同构数据库，完全没必要反查
             // 获取目标库的表信息
             DbDialect dbDialect = dbDialectFactory.getDbDialect(dataMediaPair.getPipelineId(),
-                (DbMediaSource) dataMedia.getSource());
+                    (DbMediaSource) dataMedia.getSource());
 
-            Table table = dbDialect.findTable(result.getSchemaName(), result.getTableName());
+            table = dbDialect.findTable(result.getSchemaName(), result.getTableName());
             tableHolder = new TableInfoHolder(table, useTableTransform, enableCompatibleMissColumn);
         }
 
+        //重新定义pk字段和其它字段,使用目标表的主键索引
+        List<EventColumn> columns = data.getColumns();
+        List<EventColumn> keys = data.getKeys();
+        List<EventColumn> oldKeys = data.getOldKeys();
+        boolean existOldKeys = !CollectionUtils.isEmpty(data.getOldKeys());//主键变更
+        List<EventColumn> allSourceColumns = new ArrayList<>();//源表所有字段
+        allSourceColumns.addAll(keys);
+        allSourceColumns.addAll(columns);
+        allSourceColumns = JSONObject.parseArray(JSONObject.toJSONString(allSourceColumns), EventColumn.class);
+
+        if (table == null) {
+            // 获取目标库的表信息
+            DbDialect dbDialect = dbDialectFactory.getDbDialect(dataMediaPair.getPipelineId(),
+                    (DbMediaSource) dataMedia.getSource());
+            table = dbDialect.findTable(result.getSchemaName(), result.getTableName());
+        }
+        Column[] targetPkColumns = table.getPrimaryKeyColumns();//获取目标表的主键索引
+
+        //此处的key转化为目标的字段名字
+        Map<String, EventColumn> allSourceColumnMap = allSourceColumns.stream()
+                .collect(Collectors.toMap(e -> translateColumnName(e.getColumnName(), dataMediaPair, translateColumnNames).toLowerCase(), Function.identity()));
+        List<EventColumn> pks = new ArrayList<>();
+        for (Column column : targetPkColumns) {
+            String columnName = column.getName().toLowerCase();
+            if (!allSourceColumnMap.containsKey(columnName)) {
+                throw new TransformException("redefine pks fail , column name:" + columnName + "in pair:"
+                        + JSONObject.toJSONString(dataMediaPair));
+            }
+            EventColumn eventColumn = allSourceColumnMap.get(columnName);
+            eventColumn.setKey(true);
+            pks.add(eventColumn);
+        }
+
+        //处理columns、keys和oldKeys
+        if (existOldKeys) {
+            Set<String> oldKeysMap = oldKeys.stream()
+                    .map(e -> e.getColumnName().toLowerCase())
+                    .collect(Collectors.toSet());
+            for (EventColumn pk : pks) {
+                if (!oldKeysMap.contains(pk.getColumnName().toLowerCase())) {
+                    oldKeys.add(pk);
+                }
+            }
+        }
+        allSourceColumns.removeAll(pks);
+        columns = allSourceColumns;
+        keys = pks;
+
         // 处理column转化
         List<EventColumn> otherColumns = translateColumns(result,
-            data.getColumns(),
-            context.getDataMediaPair(),
-            translateColumnNames,
-            tableHolder);
+                columns,
+                context.getDataMediaPair(),
+                translateColumnNames,
+                tableHolder);
         translatePkColumn(result,
-            data.getKeys(),
-            data.getOldKeys(),
-            otherColumns,
-            context.getDataMediaPair(),
-            translateColumnNames,
-            tableHolder);
+                keys,
+                oldKeys,
+                otherColumns,
+                context.getDataMediaPair(),
+                translateColumnNames,
+                tableHolder);
 
         result.setColumns(otherColumns);
         return result;
